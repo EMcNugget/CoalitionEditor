@@ -85,7 +85,7 @@
 </template>
 
 <script lang="ts">
-import { ref, computed, defineComponent } from "vue";
+import { ref, Ref, computed, defineComponent } from "vue";
 import { NIcon, NH2 } from "naive-ui";
 
 interface Options {
@@ -226,17 +226,13 @@ export default defineComponent({
       }
     };
 
-    const sortedSource = computed(() => {
-      return source.value.slice().sort((a, b) => a.value - b.value);
-    });
+    const sorted = (src: Ref<Options[]>) => {
+      return src.value.slice().sort((a, b) => a.value - b.value);
+    };
 
-    const sortedNeutral = computed(() => {
-      return neutral.value.slice().sort((a, b) => a.value - b.value);
-    });
-
-    const sortedTarget = computed(() => {
-      return target.value.slice().sort((a, b) => a.value - b.value);
-    });
+    const sortedSource = computed(() => sorted(source));
+    const sortedNeutral = computed(() => sorted(neutral));
+    const sortedTarget = computed(() => sorted(target));
 
     return {
       sortedSource,
