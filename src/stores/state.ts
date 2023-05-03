@@ -1,7 +1,20 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { darkTheme } from "naive-ui";
+import { Modern } from "../libs/defaults";
+import { TCoalitions } from "../types";
 import type { GlobalTheme, GlobalThemeOverrides } from "naive-ui";
+
+export const useCoalitionStore = defineStore("coa", {
+  state: () => ({
+    coa: Modern,
+  }),
+  actions: {
+    setAll(v: TCoalitions) {
+      this.coa = v;
+    },
+  },
+});
 
 const theme = ref<GlobalTheme>(darkTheme);
 const selectedTheme = ref("Dark");
