@@ -79,15 +79,17 @@
 </template>
 
 <script lang="ts">
-import { ref, Ref, computed, defineComponent } from "vue";
+import { ref, Ref, computed, defineComponent, watch } from "vue";
 import { NIcon } from "naive-ui";
-import { Modern } from "../libs/defaults";
 import { countries } from "../libs/lib";
+import { useCoalitionStore } from "../stores/state";
 
 export default defineComponent({
   setup() {
-    const [blue, neutral, red] = Object.values(Modern.coalitions).map((v) =>
-      ref<number[]>(v)
+    const coaStore = useCoalitionStore();
+
+    const [blue, neutral, red] = Object.values(coaStore.coa.coalitions).map(
+      (v) => ref<number[]>(v)
     );
 
     const currentSelection = ref<{ list: string; index: number }>({
@@ -185,6 +187,18 @@ export default defineComponent({
       const country = countries.find((country) => country.value === value);
       return country ? country.label : null;
     };
+
+    watch(sorted_red, (val) => {
+      coaStore.coa.coalitions.red = val;
+    });
+
+    watch(sorted_blue, (val) => {
+      coaStore.coa.coalitions.blue = val;
+    });
+
+    watch(sorted_neutral, (val) => {
+      coaStore.coa.coalitions.neutrals = val;
+    });
 
     return {
       sorted_red,

@@ -13,6 +13,9 @@ export const useCoalitionStore = defineStore("coa", {
     setAll(v: TCoalitions) {
       this.coa = v;
     },
+    getAll() {
+      return this.coa.coalitions;
+    },
   },
 });
 
