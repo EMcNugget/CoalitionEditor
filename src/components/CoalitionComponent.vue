@@ -86,7 +86,7 @@
 <script lang="ts">
 import { ref, Ref, computed, defineComponent, watch } from "vue";
 import { NIcon, NSelect } from "naive-ui";
-import { countries } from "../libs/lib";
+import { countries } from "../stores/lib";
 import { useCoalitionStore } from "../stores/state";
 
 export default defineComponent({

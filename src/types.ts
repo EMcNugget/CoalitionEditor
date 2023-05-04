@@ -1,4 +1,4 @@
-export interface TCoalitions {
+export default interface TCoalitions {
   coalitions: {
     blue: number[];
     neutrals: number[];

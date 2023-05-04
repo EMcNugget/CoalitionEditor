@@ -1,13 +1,13 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { darkTheme } from "naive-ui";
-import { Modern } from "../libs/defaults";
-import { TCoalitions } from "../types";
+import { WW2 } from "./lib";
+import type TCoalitions from "../types";
 import type { GlobalTheme, GlobalThemeOverrides } from "naive-ui";
 
 export const useCoalitionStore = defineStore("coa", {
   state: () => ({
-    coa: Modern,
+    coa: WW2,
   }),
   actions: {
     setAll(v: TCoalitions) {
