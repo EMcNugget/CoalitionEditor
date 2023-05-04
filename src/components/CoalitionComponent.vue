@@ -1,6 +1,11 @@
 <template>
   <div class="w-full h-full">
-    <div class="flex flex-row justify-center p-5">
+    <div class="flex flex-row justify-center p-5 relative">
+      <n-select
+        v-model:value="preset"
+        :options="preset_options"
+        class="absolute left-0 ml-5 w-1/4"
+      ></n-select>
       <button @click="handleLeftArrowClick">
         <n-icon size="35">
           <img src="../assets/leftarrow.svg" />
@@ -80,7 +85,7 @@
 
 <script lang="ts">
 import { ref, Ref, computed, defineComponent, watch } from "vue";
-import { NIcon } from "naive-ui";
+import { NIcon, NSelect } from "naive-ui";
 import { countries } from "../libs/lib";
 import { useCoalitionStore } from "../stores/state";
 
@@ -183,11 +188,6 @@ export default defineComponent({
     const sorted_neutral = computed(() => sorted(neutral));
     const sorted_blue = computed(() => sorted(blue));
 
-    const findCountryByValue = (value: number): string | null => {
-      const country = countries.find((country) => country.value === value);
-      return country ? country.label : null;
-    };
-
     watch(sorted_red, (val) => {
       coaStore.coa.coalitions.red = val;
     });
@@ -200,6 +200,20 @@ export default defineComponent({
       coaStore.coa.coalitions.neutrals = val;
     });
 
+    const findCountryByValue = (value: number): string | null => {
+      const country = countries.find((country) => country.value === value);
+      return country ? country.label : null;
+    };
+
+    const preset = ref("Custom");
+
+    const preset_options = [
+      { label: "Modern", value: "Modern" },
+      { label: "Cold War 1947-1991", value: "ColdWar" },
+      { label: "WWII", value: "WW2" },
+      { label: "Custom", value: "Custom" },
+    ];
+
     return {
       sorted_red,
       sorted_blue,
@@ -208,6 +222,8 @@ export default defineComponent({
       blue,
       neutral,
       currentSelection,
+      preset_options,
+      preset,
       findCountryByValue,
       handleLeftArrowClick,
       handleRightArrowClick,
@@ -216,6 +232,7 @@ export default defineComponent({
     };
   },
   components: {
+    NSelect,
     NIcon,
   },
 });
