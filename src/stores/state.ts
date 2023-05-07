@@ -7,7 +7,7 @@ import type { GlobalTheme, GlobalThemeOverrides } from "naive-ui";
 
 export const useCoalitionStore = defineStore("coa", {
   state: () => ({
-    coa: WW2,
+    coa: structuredClone(WW2),
   }),
   actions: {
     setAll(v: TCoalitions) {

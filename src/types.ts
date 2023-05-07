@@ -1,7 +1,7 @@
 export default interface TCoalitions {
-  coalitions: {
-    blue: number[];
-    neutrals: number[];
-    red: number[];
+  readonly coalitions: {
+    readonly blue: number[];
+    readonly neutrals: number[];
+    readonly red: number[];
   };
 }

@@ -1,11 +1,16 @@
 <template>
   <div class="w-full h-full">
     <div class="flex flex-row justify-center p-5 relative">
-      <n-select
-        v-model:value="preset"
-        :options="preset_options"
-        class="absolute left-0 ml-5 w-1/4"
-      ></n-select>
+      <n-tooltip trigger="hover" class="w-full">
+        <template #trigger>
+          <n-select
+            v-model:value="preset"
+            :options="preset_options"
+            class="absolute left-0 ml-5 w-1/4"
+          />
+        </template>
+        {{ tooltip }}
+      </n-tooltip>
       <button @click="handleLeftArrowClick">
         <n-icon size="35">
           <img src="../assets/leftarrow.svg" />
@@ -84,49 +89,76 @@
 </template>
 
 <script lang="ts">
-import { ref, Ref, computed, defineComponent, watch } from "vue";
-import { NIcon, NSelect } from "naive-ui";
-import { countries } from "../stores/lib";
+import { ref, Ref, computed, defineComponent } from "vue";
+import { NIcon, NSelect, NTooltip } from "naive-ui";
+import { ColdWar, Modern, WW2, countries } from "../stores/lib";
+import type TCoalitions from "../types";
 import { useCoalitionStore } from "../stores/state";
+
+interface ListMapping {
+  [key: string]: {
+    list: Ref<number[]>;
+    sortedList: Ref<number[]>;
+  };
+}
 
 export default defineComponent({
   setup() {
     const coaStore = useCoalitionStore();
 
-    const [blue, neutral, red] = Object.values(coaStore.coa.coalitions).map(
-      (v) => ref<number[]>(v)
-    );
+    const tooltip = "Select a coalition preset";
+
+    const red = computed(() => coaStore.coa.coalitions.red);
+    const blue = computed(() => coaStore.coa.coalitions.blue);
+    const neutral = computed(() => coaStore.coa.coalitions.neutrals);
 
     const currentSelection = ref<{ list: string; index: number }>({
       list: "red",
       index: 0,
     });
 
+    const findCountryByValue = (value: number): string | null => {
+      const country = countries.find((country) => country.value === value);
+      return country ? country.label : null;
+    };
+
     const handleItemClick = (list: string, index: number) => {
       currentSelection.value.list = list;
       currentSelection.value.index = index;
     };
 
-    // Code is pretty ugly, will refactor later
-
     const moveItem = (fromList: string, toList: string, condition: boolean) => {
-      if (condition) {
-        const from =
-          fromList === "red" ? red : fromList === "blue" ? blue : neutral;
-        const to = toList === "red" ? red : toList === "blue" ? blue : neutral;
-        const sortedFrom =
-          fromList === "red"
-            ? sorted_red
-            : fromList === "blue"
-            ? sorted_blue
-            : sorted_neutral;
-        const selectedItem = sortedFrom.value[currentSelection.value.index];
-        const originalIndex = from.value.indexOf(selectedItem);
-        const option = from.value.splice(originalIndex, 1)[0];
-        to.value.push(option);
-        currentSelection.value.list = toList;
-        currentSelection.value.index = -1;
+      if (!condition) {
+        return;
       }
+
+      const listMapping: ListMapping = {
+        red: {
+          list: red,
+          sortedList: sorted_red,
+        },
+        blue: {
+          list: blue,
+          sortedList: sorted_blue,
+        },
+        neutral: {
+          list: neutral,
+          sortedList: sorted_neutral,
+        },
+      };
+
+      const fromListData = listMapping[fromList];
+      const toListData = listMapping[toList];
+
+      const selectedItem =
+        fromListData.sortedList.value[currentSelection.value.index];
+      const originalIndex = fromListData.list.value.indexOf(selectedItem);
+
+      const option = fromListData.list.value.splice(originalIndex, 1)[0];
+      toListData.list.value.push(option);
+
+      currentSelection.value.list = toList;
+      currentSelection.value.index = -1;
     };
 
     const handleLeftArrowClick = () => {
@@ -185,27 +217,42 @@ export default defineComponent({
     };
 
     const sorted_red = computed(() => sorted(red));
-    const sorted_neutral = computed(() => sorted(neutral));
     const sorted_blue = computed(() => sorted(blue));
+    const sorted_neutral = computed(() => sorted(neutral));
 
-    watch(sorted_red, (val) => {
-      coaStore.coa.coalitions.red = val;
+    const customCoalitions = computed<TCoalitions>(() => ({
+      coalitions: {
+        red: sorted_red.value,
+        neutrals: sorted_neutral.value,
+        blue: sorted_blue.value,
+      },
+    }));
+
+    const preset = computed({
+      get() {
+        if (JSON.stringify(coaStore.coa) === JSON.stringify(Modern)) {
+          return "Modern";
+        } else if (JSON.stringify(coaStore.coa) === JSON.stringify(ColdWar)) {
+          return "ColdWar";
+        } else if (JSON.stringify(coaStore.coa) === JSON.stringify(WW2)) {
+          return "WW2";
+        } else {
+          return "Custom";
+        }
+      },
+      set(val) {
+        if (val === "Modern") {
+          coaStore.setAll(structuredClone(Modern));
+        } else if (val === "ColdWar") {
+          coaStore.setAll(structuredClone(ColdWar));
+        } else if (val === "WW2") {
+          coaStore.setAll(structuredClone(WW2));
+        } else {
+          preset.value = "Custom";
+          coaStore.setAll(structuredClone(customCoalitions.value));
+        }
+      },
     });
-
-    watch(sorted_blue, (val) => {
-      coaStore.coa.coalitions.blue = val;
-    });
-
-    watch(sorted_neutral, (val) => {
-      coaStore.coa.coalitions.neutrals = val;
-    });
-
-    const findCountryByValue = (value: number): string | null => {
-      const country = countries.find((country) => country.value === value);
-      return country ? country.label : null;
-    };
-
-    const preset = ref("Custom");
 
     const preset_options = [
       { label: "Modern", value: "Modern" },
@@ -215,6 +262,7 @@ export default defineComponent({
     ];
 
     return {
+      tooltip,
       sorted_red,
       sorted_blue,
       sorted_neutral,
@@ -232,6 +280,7 @@ export default defineComponent({
     };
   },
   components: {
+    NTooltip,
     NSelect,
     NIcon,
   },
